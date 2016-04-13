@@ -28,7 +28,7 @@ Rx16Response rx16 = Rx16Response();
 int resetRSSI = -1000;    //The value that RSSI is reset to after each pass through filter
 #define samples 110
 int temp, smoothData, rawData;
-int timeToScan = 4000;
+int timeToScan = 2000;
 short currentHeading;
 
 //Variable for i2c comms
