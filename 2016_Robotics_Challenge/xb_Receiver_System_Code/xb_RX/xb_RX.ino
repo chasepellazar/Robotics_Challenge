@@ -14,9 +14,6 @@ Modified by Robert Belter 10/30/2015
 //////////////////////////////////*/
 
 
-
-
-
 #include <XBee.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
@@ -98,8 +95,6 @@ void Retrieve(int i){
       //Write to array
       readings[i].heading = heading_converter.f;
       readings[i].signalStrength = currentRSSI;
-      //Serial.print(readings[i].heading); Serial.print("\t");
-      //Serial.println(readings[i].signalStrength);
     }
   }else{
     readings[i].heading = 0;
@@ -128,30 +123,30 @@ int ProcessData(){
     return -1;
   }
 
-  //Use the maximum heading to define heading
-  float heading = readings[maxIndex].heading;
-
-  //------Averaging Code, currently Defunct-------
-  /*
-    
-  //Create an average of all the samples
-  //Circular mean, so use vector addition
   float headingx = 0;
   float headingy = 0;
-  for(int i=1; i< samples; i++){
-    //Set magnitude of vector by signal strength
-    headingx += readings[i].signalStrength*cos(readings[i].heading*PI/180);
-    headingy += readings[i].signalStrength*sin(readings[i].heading*PI/180);
+  for(int i = 0; i < samples; i++)
+  {
+    if (readings[i].signalStrength == -1000 && readings[i].heading == 0)
+    {
+       Serial.println("this heading not included");
+    }
+    else
+    {
+      Serial.print(readings[i].heading);
+      Serial.print("\t");
+      Serial.println(readings[i].signalStrength);
+      // Set magnitude of vector by signal strength
+      headingx += readings[i].signalStrength * cos(readings[i].heading * PI / 180);
+      headingy += readings[i].signalStrength * sin(readings[i].heading * PI / 180);
+    }
   }
   
   float heading = atan2(headingy, headingx);
-  if(heading < 0)
-    heading += 2*PI;
-  heading = heading * 180/PI;
-  */
-  //------End Averaging Code------
-  
-  return (int) (heading);    //Return the average of all headings
+  if (heading < 0) heading += 2 * PI;
+  heading = heading * 180 / PI;
+
+  return (int) heading;
 }
 
 //When info is requested over i2c
