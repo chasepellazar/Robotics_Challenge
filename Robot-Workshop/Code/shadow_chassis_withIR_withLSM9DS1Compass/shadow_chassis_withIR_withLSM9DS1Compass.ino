@@ -97,19 +97,19 @@ void loop()
   //Determine if the robot should move ("1") or if it should stay still ("0")
   // First case, moving pin == 0. Robot does not move.  movingPin is set to 0V.
 
-//  if (digitalRead(movingPin) == 0)
-//  {
-//    // turn the motors off
-//    analogWrite(pwm_a, 0);  //set both motors to run at 0% duty cycle (off)
-//    analogWrite(pwm_b, 0);
-//    //wait
-//    Serial.println("motors off");
-//    delay(1000);
-//  }
+  if (digitalRead(movingPin) == 0)
+  {
+    // turn the motors off
+    analogWrite(pwm_a, 0);  //set both motors to run at 0% duty cycle (off)
+    analogWrite(pwm_b, 0);
+    //wait
+    Serial.println("motors off");
+    delay(1000);
+  }
 
   // This else case is where the robot should move.  "movingPin ==1"
-  //else
-  //{
+  else
+  {
     // Check IR Sensor. If it is too close to something take evasive maneuvers
     if (IRsensorValue > obstacleSeen)
     {
@@ -148,7 +148,7 @@ void loop()
 
       }
     }
-  //}
+  }
 }
 
 
