@@ -17,5 +17,4 @@ Files Included
 - **Arduino_Read_using_i2c** is example code for using the Fio/Xbee system with an arduino
 - **Arduino_debug_or_diagnostic_unit_code** is code for use in a diagnostics unit
 - **HMC_Magnetometer_Test** allows you to test the functionality of your magnetometer.
-
-**LSM9DS1MagnetometerCalibration** allows you to calibrate the LSM9DS1 compass and test the functionality
+- **LSM9DS1MagnetometerCalibration** allows you to calibrate the LSM9DS1 compass and test the functionality
