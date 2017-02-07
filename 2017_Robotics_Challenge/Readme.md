@@ -3,7 +3,7 @@ XBee Beacon System Code
 
 Overview
 --------------
-This is the code for the XBee Beacon system in the 2016 Robotics Challenge.
+This is the code for the XBee Beacon system in the 2017 Robotics Challenge.
 Both the reciever code and transmitter code are here, as well as some examples
 to help you use them and calibrate your system
 
