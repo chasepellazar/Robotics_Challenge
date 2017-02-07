@@ -1,9 +1,12 @@
 //XBEE 2.4GHZ Transmitter System For Delivering Location Relative Bearing in Degrees.
 //Finalized by Jack Maydan based off Adam St. Amard's earlier versions.
-//Edited by Robert Belter 10/30/2015
 
+//Edited by Robert Belter 10/30/2015
+//Updated by Thomas Horning 02/07/2017
+//--Added functionalitity for LSM9DS1 Compass 
 //
-//This program works based on the Spark Fun Arduino FIO v3.3 with an XBEE transmitter hooked to an extended antennae.
+//This program works based on the Spark Fun Arduino FIO v3.3 with an XBEE
+//transmitter hooked to an extended antennae.
 //The board also is hooked to a 3 axis magnetometer. 
 //
 //The entire module rotates, calculates the bearing based off magnetomer, 
@@ -13,19 +16,43 @@
 
 #include <XBee.h>
 #include <Wire.h>
-//#include <HMC5883L.h>
+#include <HMC5883L.h>
+#include <SparkFunLSM9DS1.h>
+//------------------------CHOOSE COMPASS--------------------------------
+//This code can either work with the LSM9DS1 Compass or the HMC5883L compass
+//We have provided two modes (one for each compass). Please selest the compass
+//begin used:
+
+//Uncomment the below line If using the HMC5883L
+//#define HMC
+
+//Uncomment the below line if using the LSM9DS1
+//#define LSM
+
+//---COMPASS SETUP---
+
 #define address 0x1E 
 
+
+LSM9DS1 imu;
+// I2C setup
+#define LSM9DS1_M  0x1E // Would be 0x1C if SDO_M is LOW
+#define LSM9DS1_AG  0x6B // Would be 0x6A if SDO_AG is LOW
+  
 //--------------------CALIBRATION FOR MAGNETOMETER---------------------
 //In order to ensure that your transmitter will read the correct heading,
 //we have provided a calibration mode that will print the values over the
 //Xbees. Make sure to use with XB_RX_Calibration
+
 
 //Uncomment the below line to activate print out over serial for magnetometer x,y,z
 //#define calibration_mode
 
 //Uncomment the below line to activate output above ^ over XBee 
 //#define output_calibration
+
+//Set Declination angle
+#define DECLINATION 8.58
 
 //Axis offsets for magnetometer
 int xoff = -7;
@@ -66,14 +93,41 @@ void setup(){
   Serial.begin(57600);
   Serial1.begin(57600);
   xbee.setSerial(Serial1);
+  
+#ifdef HMC
   Wire.beginTransmission(address); //open communication with HMC5883
   Wire.write(0x02); //select mode register
   Wire.write(0x00); //continuous measurement mode
   Wire.endTransmission();
+  
+#elif LSM
+  imu.settings.device.commInterface = IMU_MODE_I2C;
+  imu.settings.device.mAddress = LSM9DS1_M;
+  imu.settings.device.agAddress = LSM9DS1_AG;
+  // Verification of connection with compass
+  if (!imu.begin())
+  {
+    Serial.println("Failed to communicate with LSM9DS1.");
+    Serial.println("Double-check wiring.");
+    Serial.println("Default settings in this sketch will " \
+                   "work for an out of the box LSM9DS1 " \
+                   "Breakout, but may need to be modified " \
+                   "if the board jumpers are.");
+    while (1);
+  }
+#endif
 }
 
 void loop(){
-  getVector();
+  
+#ifdef HMC
+  getVectorHMC();
+  
+#elif LSM
+  getVectorLSM();
+  
+#endif
+
   Serial.print("Theta: ");
   Serial.println(heading_converter.f, 2); // print the heading/bearing
 
@@ -106,7 +160,7 @@ void makePayload(){
 /*--------------------------------------------------------------
 This the the fucntion which gathers the heading from the compass.
 ----------------------------------------------------------------*/
-void getVector () {
+void getVectorHMC () {
   float reading = -1;
   int x,y,z;
 
@@ -158,4 +212,44 @@ void getVector () {
   reading = heading * 180/PI;
   heading_converter.f = reading;    // return the heading or bearing
 }
+void getVectorLSM () {
+  float reading = -1;
+  float x, y, z;
+  imu.readMag();
+  // Subtract calculated offsets from magnetometer data
+  x = imu.calcMag(imu.mx);
+  y = imu.calcMag(imu.my);
+  z = imu.calcMag(imu.mz);
+  //Adjust values by offsets
+  x += xoff;
+  y += yoff;
+  // Scaling correction
+  x *= xscale;
+  y *= yscale;
 
+#ifdef calibration_mode
+  xout = x;
+  yout = y;
+  zout = z;
+  char output[100];
+  sprintf(output, "x: %d, y: %d, z: %d", xout, yout, zout);
+  Serial.println(output);
+#endif
+
+  // Calculate heading
+  float heading;
+  if (y == 0)
+    heading = (x < 0) ? PI : 0;
+  else
+    heading = atan2(y, x);
+
+  heading -= DECLINATION * (PI / 180);
+
+  if (heading > 2 * PI) heading -= (2 * PI);
+  else if (heading < -PI) heading += (2 * PI);
+  else if (heading < 0) heading += (2 * PI);
+
+  // Convert everything from radians to degrees:
+  reading = heading * 180/PI;
+  heading_converter.f = reading;    // return the heading or bearing
+}
