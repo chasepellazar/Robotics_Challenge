@@ -138,9 +138,9 @@ void getVectorLSM() {
   z = imu.calcMag(imu.mz);
   
   //Adjust values by offsets
-  x += xoff;
-  y += yoff;
-  z += zoff;
+  x -= xoff;
+  y -= yoff;
+  z -= zoff;
   //Scale axes
   x *= xscale;
   y *= yscale;
