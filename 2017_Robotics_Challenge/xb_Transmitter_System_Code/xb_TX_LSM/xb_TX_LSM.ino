@@ -34,13 +34,13 @@
 // http://www.ngdc.noaa.gov/geomag-web/#declination
 #define DECLINATION 8.58  //Declination (degrees) in Boulder, CO.
 //Axis offsets for magnetometer
-int xoff = -0.135;
-int yoff = 0.535;
-int zoff = 0;   
+float xoff = -0.06;
+float yoff = 0.40;
+float zoff = 0;   
 
 //Axis scales for magnetometer
-float xscale = 1.02173913;
-float yscale = 0.97826087;
+float xscale = 1.01;
+float yscale = 0.989;
 float zscale = 1;
 
 #ifdef output_calibration
